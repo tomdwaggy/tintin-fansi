@@ -24,6 +24,10 @@ Install the rom.pcf font I have provided, precompiled.
 When you want to see all the FANSI art, just do
 \#config charset fansi
 
+## Issues
+If you run in split mode, you may want to also set "#config {packet patch} {0.5}"
+to fix a visual glitch.
+
 ## License
 As the original project is GPLv2, these changes are also
 licensed GPLv2 or higher.
