@@ -87,7 +87,7 @@ diff -ruN tt/src/fansi.h tt-2.01.2-fansi/src/fansi.h
 +#endif
 diff -ruN tt/src/net.c tt-2.01.2-fansi/src/net.c
 --- tt/src/net.c	2015-02-02 18:41:54.000000000 -0500
-+++ tt-2.01.2-fansi/src/net.c	2017-03-14 18:09:59.275945153 -0400
++++ tt-2.01.2-fansi/src/net.c	2017-03-14 18:47:02.598970016 -0400
 @@ -27,6 +27,7 @@
  
  
@@ -159,7 +159,7 @@ diff -ruN tt/src/net.c tt-2.01.2-fansi/src/net.c
 +                {
 +                        j += ucs2_to_utf8(outc, ((unsigned char*)output + j));
 +                } else {
-+                        output[j++] += input[i];
++                        output[j++] = input[i];
 +                }
 +        }
 +        output[j] = '\0';
