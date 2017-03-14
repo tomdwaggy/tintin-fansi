@@ -1,0 +1,273 @@
+diff -ruN tt/src/config.c tt-2.01.2-fansi/src/config.c
+--- tt/src/config.c	2014-10-04 22:56:46.000000000 -0400
++++ tt-2.01.2-fansi/src/config.c	2017-03-14 00:58:49.465149339 -0400
+@@ -570,3 +570,25 @@
+ 
+ 	return ses;
+ }
++
++DO_CONFIG(config_fansi)
++{
++	if (!strcasecmp(arg, "ON"))
++	{
++                do_configure(ses, "CHARSET UTF-8");
++		SET_BIT(ses->flags, SES_FLAG_FANSI);
++	}
++	else if (!strcasecmp(arg, "OFF"))
++	{
++		DEL_BIT(ses->flags, SES_FLAG_FANSI);
++	}
++	else
++	{
++		show_error(ses, LIST_CONFIG, "#SYNTAX: #CONFIG {%s} <ON|OFF>", config_table[index].name);
++
++		return NULL;
++	}
++	update_node_list(ses->list[LIST_CONFIG], config_table[index].name, capitalize(arg), "");
++
++	return ses;
++}
+Binary files tt/src/cp437raw and tt-2.01.2-fansi/src/cp437raw differ
+Binary files tt/src/cp437utf8 and tt-2.01.2-fansi/src/cp437utf8 differ
+diff -ruN tt/src/fansi.h tt-2.01.2-fansi/src/fansi.h
+--- tt/src/fansi.h	1969-12-31 19:00:00.000000000 -0500
++++ tt-2.01.2-fansi/src/fansi.h	2017-03-14 01:13:09.377413403 -0400
+@@ -0,0 +1,51 @@
++#ifndef __FANSI_H__
++#define __FANSI_H__
++
++int ibm_cp437[256] = {
++  0x0000, 0x263a, 0x0000, 0x2665, 0x2666, 0x2663, 0x2660, 0x0000, 0x0000,
++  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x266b, 0x263c, 0x25ba,
++  0x25c4, 0x2195, 0x203c, 0x00b6, 0x00a7, 0x25ac, 0x21a8, 0x2191,
++  0x2193, 0x2192, 0, 0x221f, 0x2194, 0x25b2, 0x25bc, 32, 33, 34, 35,
++  36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
++  52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
++  68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
++  84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
++  100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
++  113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125,
++  126, 0x2302, 0x00c7, 0x00fc, 0x00e9, 0x00e2, 0x00e4, 0x00e0, 0x00e5,
++  0x00e7, 0x00ea, 0x00eb, 0x00e8, 0x00ef, 0x00ee, 0x00ec, 0x00c4,
++  0x00c5, 0x00c9, 0x00e6, 0x00c6, 0x00f4, 0x00f6, 0x00f2, 0x00fb,
++  0x00f9, 0x00ff, 0x00d6, 0x00dc, 0x00a2, 0x00a3, 0x00a5, 0x20a7,
++  0x0192, 0x00e1, 0x00ed, 0x00f3, 0x00fa, 0x00f1, 0x00d1,
++  0x00aa, 0x00ba, 0x00bf, 0x2310, 0x00ac, 0x00bd, 0x00bc, 0x00a1, 0x00ab,
++  0x00bb, 0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x2561, 0x2562,
++  0x2556, 0x2555, 0x2563, 0x2551, 0x2557, 0x255d, 0x255c, 0x255b,
++  0x2510, 0x2514, 0x2534, 0x252c, 0x251c, 0x2500, 0x253c, 0x255e,
++  0x255f, 0x255a, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256c,
++  0x2567, 0x2568, 0x2564, 2565, 0x2559, 0x2558, 0x2552, 0x2553,
++  0x256b, 0x256a, 0x2518, 0x250c, 0x2588, 0x2584, 0x258c, 0x2590,
++  0x2580, 0x03b1, 0x00df, 0x0393, 0x03c0, 0x03a3, 0x03c3, 0x00b5,
++  0x03c4, 0x03a6, 0x0398, 0x03a9, 0x03b4, 0x221e, 0x03c6, 0x03b5,
++  0x2229, 0x2261, 0x00b1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00f7,
++  0x2248, 0x00b0, 0x2219, 0x00b7, 0x221a, 0x207f, 0x00b2, 0x25a0,
++  0
++};
++
++/* The maximum number of bytes we need to contain any Unicode code
++   point as UTF-8 as a C string. */
++
++#define UTF8_MAX_LENGTH 4
++
++/* The maximum possible value of a Unicode code point. See
++   http://www.cl.cam.ac.uk/~mgk25/unicode.html#ucs. */
++
++#define UNICODE_MAXIMUM 0x10ffff
++
++/* The maximum possible value which will fit into four bytes of
++   UTF-8. This is larger than UNICODE_MAXIMUM. */
++
++#define UNICODE_UTF8_4 0x1fffff
++
++int ucs2_to_utf8 (int ucs2, unsigned char * utf8);
++
++#endif
+diff -ruN tt/src/net.c tt-2.01.2-fansi/src/net.c
+--- tt/src/net.c	2015-02-02 18:41:54.000000000 -0500
++++ tt-2.01.2-fansi/src/net.c	2017-03-14 01:12:13.409135891 -0400
+@@ -27,6 +27,7 @@
+ 
+ 
+ #include "tintin.h"
++#include "fansi.h"
+ 
+ #include <errno.h>
+ #include <sys/types.h>
+@@ -365,6 +366,13 @@
+ 		check_all_events(ses, SUB_ARG|SUB_SEC, 0, 2, "RECEIVED PROMPT", linebuf, line);
+ 	}
+ 
++        if (HAS_BIT(ses->flags, SES_FLAG_FANSI))
++        {
++                char fansi_buf[STRING_SIZE];
++                convert_fansi(linebuf, fansi_buf);
++                linebuf = fansi_buf;
++        }
++
+ 	if (HAS_BIT(ses->flags, SES_FLAG_COLORPATCH))
+ 	{
+ 		sprintf(line, "%s%s%s", ses->color, linebuf, "\e[0m");
+@@ -414,3 +422,95 @@
+ 	return;
+ }
+ 
++/*
++        FANSI converter - TomDataworks
++*/
++
++void convert_fansi(char* input, char* output)
++{
++        push_call("convert_fansi(%p,%p)", input, output);
++
++        int i, j, outc;
++        for(i = 0, j = 0; input[i] != '\0'; i++)
++        {
++                if (input[i] == '\e')
++                {
++                        output[j++] = input[i++];
++                        do {
++                                output[j++] = input[i++];
++                        } while (
++                                input[i - 1] != 'H' &&
++                                input[i - 1] != 'f' &&
++                                input[i - 1] != 'A' &&
++                                input[i - 1] != 'B' &&
++                                input[i - 1] != 'C' &&
++                                input[i - 1] != 'D' &&
++                                input[i - 1] != 's' &&
++                                input[i - 1] != 'u' &&
++                                input[i - 1] != 'J' &&
++                                input[i - 1] != 'K' &&
++                                input[i - 1] != 'm' &&
++                                input[i - 1] != 'h' &&
++                                input[i - 1] != 'l' &&
++                                input[i - 1] != 'p'
++                        );
++                        i--;
++                        continue;
++                }
++
++                if(input[i] == '\0')
++                        break;
++
++                unsigned char in = (unsigned char)input[i];
++                outc = ibm_cp437[in];
++                if(outc > 0)
++                {
++                        j += ucs2_to_utf8(outc, ((unsigned char*)output + j));
++                } else {
++                        input[j++] += input[i];
++                }
++        }
++        output[j] = '\0';
++
++        pop_call();
++}
++
++/*
++	UCS2 to UTF8 mapping function.
++	Original author: Ben Bullock <benkasminbullock@gmail.com>, <bkb@cpan.org>
++	Licensed under GPLv2 or higher, BSD 3-clause, PERL Artistic License
++*/
++
++int ucs2_to_utf8 (int ucs2, unsigned char * utf8)
++{
++    if (ucs2 < 0x80) {
++        utf8[0] = ucs2;
++        return 1;
++    }
++    if (ucs2 < 0x800) {
++        utf8[0] = (ucs2 >> 6)   | 0xC0;
++        utf8[1] = (ucs2 & 0x3F) | 0x80;
++        return 2;
++    }
++    if (ucs2 < 0xFFFF) {
++        utf8[0] = ((ucs2 >> 12)       ) | 0xE0;
++        utf8[1] = ((ucs2 >> 6 ) & 0x3F) | 0x80;
++        utf8[2] = ((ucs2      ) & 0x3F) | 0x80;
++	if (ucs2 >= 0xD800 && ucs2 <= 0xDFFF) {
++	    /* Ill-formed. */
++	    return 0;
++	}
++        return 3;
++    }
++    if (ucs2 <= UNICODE_UTF8_4) {
++	/* http://tidy.sourceforge.net/cgi-bin/lxr/source/src/utf8.c#L380 */
++	utf8[0] = 0xF0 | (ucs2 >> 18);
++	utf8[1] = 0x80 | ((ucs2 >> 12) & 0x3F);
++	utf8[2] = 0x80 | ((ucs2 >> 6) & 0x3F);
++	utf8[3] = 0x80 | ((ucs2 & 0x3F));
++        return 4;
++    }
++
++    /* Too big. */
++    return 0;
++}
+diff -ruN tt/src/tables.c tt-2.01.2-fansi/src/tables.c
+--- tt/src/tables.c	2016-09-05 22:04:16.000000000 -0400
++++ tt-2.01.2-fansi/src/tables.c	2017-03-12 22:56:29.788319644 -0400
+@@ -336,6 +336,13 @@
+ 	},
+ 
+ 	{
++		"FANSI",
++		"FANSI is enabled.",
++		"FANSI is disabled.",
++		config_fansi
++	},
++
++	{
+ 		"",
+ 		"",
+ 		0,
+diff -ruN tt/src/telopt.c tt-2.01.2-fansi/src/telopt.c
+--- tt/src/telopt.c	2016-09-20 22:40:34.000000000 -0400
++++ tt-2.01.2-fansi/src/telopt.c	2017-03-14 00:50:56.526804236 -0400
+@@ -452,10 +452,14 @@
+ 					continue;
+ 
+ 				case 5:
+-					check_all_events(ses, SUB_ARG, 0, 1, "VT100 ENQ", gtd->term);
+-					cpsrc++;
+-					cplen--;
+-					continue;
++                                        if (!HAS_BIT(ses->flags, SES_FLAG_FANSI))
++                                        {
++						check_all_events(ses, SUB_ARG, 0, 1, "VT100 ENQ", gtd->term);
++						cpsrc++;
++						cplen--;
++						continue;
++                                        }
++                                        break;
+ 
+ 				case '\r':
+ 					if (cplen > 1 && cpsrc[1] == '\n')
+diff -ruN tt/src/tintin.h tt-2.01.2-fansi/src/tintin.h
+--- tt/src/tintin.h	2017-01-15 20:04:50.000000000 -0500
++++ tt-2.01.2-fansi/src/tintin.h	2017-03-12 23:32:27.871020763 -0400
+@@ -338,6 +338,7 @@
+ #define SES_FLAG_256COLOR             (1 << 28)
+ #define SES_FLAG_IGNORELINE           (1 << 29)
+ #define SES_FLAG_CLOSED               (1 << 30)
++#define SES_FLAG_FANSI                (1 << 31)
+ 
+ #define TELOPT_FLAG_SGA               (1 <<  0)
+ #define TELOPT_FLAG_ECHO              (1 <<  1)
+@@ -1347,6 +1348,7 @@
+ extern DO_CONFIG(config_autotab);
+ extern DO_CONFIG(config_charset);
+ extern DO_CONFIG(config_256color);
++extern DO_CONFIG(config_fansi);
+ 
+ #endif
+ 
+@@ -1831,6 +1833,7 @@
+ extern void printline(struct session *ses, char **str, int isaprompt);
+ int word_wrap(struct session *ses, char *textin, char *textout, int display);
+ int word_wrap_split(struct session *ses, char *textin, char *textout, int skip, int keep);
++extern void convert_fansi(char *input, char *output);
+ 
+ #endif
+ 
