@@ -22,7 +22,7 @@ Install the rom.pcf font I have provided, precompiled.
 
 ## Using
 When you want to see all the FANSI art, just do
-\#config fansi on
+\#config charset fansi
 
 ## License
 As the original project is GPLv2, these changes are also
