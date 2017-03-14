@@ -28,8 +28,6 @@ diff -ruN tt/src/config.c tt-2.01.2-fansi/src/config.c
  	else
  	{
  		show_error(ses, LIST_CONFIG, "#SYNTAX: #CONFIG {%s} <ASCII|BIG5|UTF-8>", config_table[index].name);
-Binary files tt/src/cp437raw and tt-2.01.2-fansi/src/cp437raw differ
-Binary files tt/src/cp437utf8 and tt-2.01.2-fansi/src/cp437utf8 differ
 diff -ruN tt/src/fansi.h tt-2.01.2-fansi/src/fansi.h
 --- tt/src/fansi.h	1969-12-31 19:00:00.000000000 -0500
 +++ tt-2.01.2-fansi/src/fansi.h	2017-03-14 18:17:47.782268433 -0400
